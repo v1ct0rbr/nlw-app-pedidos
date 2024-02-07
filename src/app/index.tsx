@@ -1,37 +1,54 @@
-import {useState} from "react"
-import { CategoryButton } from "@/components/category-button"
+import { useState, useRef } from "react"
+import { View, FlatList, SectionList, Text } from "react-native"
+import { Link } from "expo-router"
+
+import { CATEGORIES, MENU } from "@/utils/data/products"
 
 import { Header } from "@/components/header"
-import { View, FlatList, SectionList, Text } from "react-native"
-import { CATEGORIES, MENU } from "@/utils/data/products"
+import { CategoryButton } from "@/components/category-button"
 import { Product } from "@/components/product"
+import { useCartStore } from "@/stores/cart-store"
 
 
 export default function Home() {
 
-const [category, setCategory] = useState(CATEGORIES[0]);
-    
+    const cartStore = useCartStore();
 
-function hangleCategorySelect(selectedCategory: string) {
-    setCategory(selectedCategory)
-}
+    const [category, setCategory] = useState(CATEGORIES[0]);
+
+    const sectionListRef = useRef<SectionList>(null);
+    const cartQuantityItems = cartStore.products.reduce((total, product) => total + product.quantity, 0);
+
+    function hangleCategorySelect(selectedCategory: string) {
+        setCategory(selectedCategory);
+        const sectionIndex = CATEGORIES.findIndex((category) => category == selectedCategory);
+        if (sectionListRef.current) {
+            sectionListRef.current.scrollToLocation({
+                animated: true,
+                sectionIndex,
+                itemIndex: 0,
+            })
+        }
+    }
 
     return (
         <View className="pt-8" >
-            <Header title="Faça seu pedido" cartQuantityItems={3} />
+            <Header title="Faça seu pedido" cartQuantityItems={cartQuantityItems} />
             <FlatList data={CATEGORIES} keyExtractor={(item) => item} renderItem={({ item }) => (
-                <CategoryButton title={item} isSelected={item === category} onPress={() => hangleCategorySelect(item)}/>
-            )} horizontal className="max-w-10 mt-5 h-10"  contentContainerStyle={{gap: 12, paddingHorizontal: 20}} showsHorizontalScrollIndicator={false}/>
+                <CategoryButton title={item} isSelected={item === category} onPress={() => hangleCategorySelect(item)} />
+            )} horizontal className="max-w-10 mt-5 h-10" contentContainerStyle={{ gap: 12, paddingHorizontal: 20 }} showsHorizontalScrollIndicator={false} />
 
-            <SectionList sections={MENU} 
-                keyExtractor={(item) => item.id} 
-                stickySectionHeadersEnabled={false} 
-                renderItem={({item}) => (
-                  <Product data={item} ></Product>
+            <SectionList sections={MENU} ref={sectionListRef}
+                keyExtractor={(item) => item.id}
+                stickySectionHeadersEnabled={false}
+                renderItem={({ item }) => (
+                    <Link href={`/product/${item.id}`} asChild>
+                        <Product data={item} ></Product>
+                    </Link>
                 )}
-                renderSectionHeader={({section : {title}}) => <Text className="text-xl text-white font-heading mt-8 mb-3">{title}</Text>} 
-                className="p-5" showsVerticalScrollIndicator={false} contentContainerStyle={{paddingBottom: 200}}>
-                    
+                renderSectionHeader={({ section: { title } }) => <Text className="text-xl text-white font-heading mt-8 mb-3">{title}</Text>}
+                className="p-5" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 200 }}>
+
             </SectionList>
 
         </View>
