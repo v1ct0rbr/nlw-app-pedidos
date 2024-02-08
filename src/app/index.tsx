@@ -2,7 +2,7 @@ import { useState, useRef } from "react"
 import { View, FlatList, SectionList, Text } from "react-native"
 import { Link } from "expo-router"
 
-import { CATEGORIES, MENU } from "@/utils/data/products"
+import { CATEGORIES, MENU, ProductProps } from "@/utils/data/products"
 
 import { Header } from "@/components/header"
 import { CategoryButton } from "@/components/category-button"
@@ -16,7 +16,7 @@ export default function Home() {
 
     const [category, setCategory] = useState(CATEGORIES[0]);
 
-    const sectionListRef = useRef<SectionList>(null);
+    const sectionListRef = useRef<SectionList<ProductProps>>(null);
     const cartQuantityItems = cartStore.products.reduce((total, product) => total + product.quantity, 0);
 
     function hangleCategorySelect(selectedCategory: string) {
@@ -36,7 +36,8 @@ export default function Home() {
             <Header title="Faça seu pedido" cartQuantityItems={cartQuantityItems} />
             <FlatList data={CATEGORIES} keyExtractor={(item) => item} renderItem={({ item }) => (
                 <CategoryButton title={item} isSelected={item === category} onPress={() => hangleCategorySelect(item)} />
-            )} horizontal className="max-w-10 mt-5 h-10" contentContainerStyle={{ gap: 12, paddingHorizontal: 20 }} showsHorizontalScrollIndicator={false} />
+            )} horizontal className="max-w-10 mt-5 h-10" contentContainerStyle={{ gap: 12, paddingHorizontal: 20 }} 
+            showsHorizontalScrollIndicator={false} />
 
             <SectionList sections={MENU} ref={sectionListRef}
                 keyExtractor={(item) => item.id}
